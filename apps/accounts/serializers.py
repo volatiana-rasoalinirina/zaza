@@ -1,4 +1,8 @@
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework import serializers
+
+from apps.accounts.models import School
+
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
@@ -8,3 +12,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['role'] = user.role
         token['school_id'] = user.school_id
         return token
+
+class SchoolSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = School
+        fields = ['id', 'name', 'slug']
