@@ -11,6 +11,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'apps.accounts',
+    'apps.children',
     # third party
     'rest_framework',
     'rest_framework_simplejwt',
