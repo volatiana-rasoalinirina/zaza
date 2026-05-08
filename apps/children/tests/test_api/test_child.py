@@ -6,6 +6,45 @@ from apps.accounts.models import School, User
 from apps.children.models import Child, Group
 
 
+class ChildListTests(APITestCase):
+
+    def setUp(self):
+        self.school = School.objects.create(name='Crèche Les Petits', slug='creche-les-petits')
+        self.other_school = School.objects.create(name='Autre Crèche', slug='autre-creche')
+
+        self.director = User.objects.create_user(
+            email='director@zaza.io',
+            password='director123',
+            role=User.Role.DIRECTOR,
+            school=self.school,
+        )
+
+        self.group = Group.objects.create(name='TPS', school=self.school)
+        self.other_group = Group.objects.create(name='TPS', school=self.other_school)
+
+        self.child = Child.objects.create(
+            first_name='Lova', last_name='Rakoto', birth_date='2022-03-15',
+            group=self.group, allergies=[],
+        )
+        self.other_child = Child.objects.create(
+            first_name='Hery', last_name='Andria', birth_date='2021-05-10',
+            group=self.other_group, allergies=[],
+        )
+
+    def test_director_sees_only_own_school_children(self):
+        self.client.force_authenticate(user=self.director)
+        response = self.client.get(reverse('child-list'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        ids = [c['id'] for c in response.data]
+        self.assertIn(self.child.id, ids)
+        self.assertNotIn(self.other_child.id, ids)
+
+    def test_director_cannot_retrieve_another_school_child(self):
+        self.client.force_authenticate(user=self.director)
+        response = self.client.get(reverse('child-detail', kwargs={'pk': self.other_child.id}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
 class ChildCreateTests(APITestCase):
 
     def setUp(self):
