@@ -2,34 +2,21 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from apps.accounts.models import School, User
-from apps.children.models import Child, Group
+from apps.accounts.models import User
+from apps.children.models import Child
+from apps.factories import ChildFactory, GroupFactory, SchoolFactory, UserFactory
 
 
 class ChildListTests(APITestCase):
 
     def setUp(self):
-        self.school = School.objects.create(name='Crèche Les Petits', slug='creche-les-petits')
-        self.other_school = School.objects.create(name='Autre Crèche', slug='autre-creche')
-
-        self.director = User.objects.create_user(
-            email='director@zaza.io',
-            password='director123',
-            role=User.Role.DIRECTOR,
-            school=self.school,
-        )
-
-        self.group = Group.objects.create(name='TPS', school=self.school)
-        self.other_group = Group.objects.create(name='TPS', school=self.other_school)
-
-        self.child = Child.objects.create(
-            first_name='Lova', last_name='Rakoto', birth_date='2022-03-15',
-            group=self.group, allergies=[],
-        )
-        self.other_child = Child.objects.create(
-            first_name='Hery', last_name='Andria', birth_date='2021-05-10',
-            group=self.other_group, allergies=[],
-        )
+        self.school = SchoolFactory()
+        self.other_school = SchoolFactory()
+        self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
+        self.group = GroupFactory(school=self.school)
+        self.other_group = GroupFactory(school=self.other_school)
+        self.child = ChildFactory(group=self.group)
+        self.other_child = ChildFactory(group=self.other_group)
 
     def test_director_sees_only_own_school_children(self):
         self.client.force_authenticate(user=self.director)
@@ -48,25 +35,12 @@ class ChildListTests(APITestCase):
 class ChildCreateTests(APITestCase):
 
     def setUp(self):
-        self.school = School.objects.create(name='Crèche Les Petits', slug='creche-les-petits')
-        self.other_school = School.objects.create(name='Autre Crèche', slug='autre-creche')
-
-        self.director = User.objects.create_user(
-            email='director@zaza.io',
-            password='director123',
-            role=User.Role.DIRECTOR,
-            school=self.school,
-        )
-        self.teacher = User.objects.create_user(
-            email='teacher@zaza.io',
-            password='teacher123',
-            role=User.Role.TEACHER,
-            school=self.school,
-        )
-
-        self.group = Group.objects.create(name='TPS', school=self.school)
-        self.other_group = Group.objects.create(name='TPS', school=self.other_school)
-
+        self.school = SchoolFactory()
+        self.other_school = SchoolFactory()
+        self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
+        self.teacher = UserFactory(role=User.Role.TEACHER, school=self.school)
+        self.group = GroupFactory(school=self.school)
+        self.other_group = GroupFactory(school=self.other_school)
         self.url = reverse('child-list')
         self.payload = {
             'first_name': 'Lova',
@@ -111,40 +85,14 @@ class ChildCreateTests(APITestCase):
 class ChildUpdateTests(APITestCase):
 
     def setUp(self):
-        self.school = School.objects.create(name='Crèche Les Petits', slug='creche-les-petits')
-        self.other_school = School.objects.create(name='Autre Crèche', slug='autre-creche')
-
-        self.director = User.objects.create_user(
-            email='director@zaza.io',
-            password='director123',
-            role=User.Role.DIRECTOR,
-            school=self.school,
-        )
-        self.teacher = User.objects.create_user(
-            email='teacher@zaza.io',
-            password='teacher123',
-            role=User.Role.TEACHER,
-            school=self.school,
-        )
-
-        self.group = Group.objects.create(name='TPS', school=self.school)
-        self.other_group = Group.objects.create(name='TPS', school=self.other_school)
-
-        self.child = Child.objects.create(
-            first_name='Lova',
-            last_name='Rakoto',
-            birth_date='2022-03-15',
-            group=self.group,
-            allergies=[],
-        )
-        self.other_child = Child.objects.create(
-            first_name='Hery',
-            last_name='Andria',
-            birth_date='2021-05-10',
-            group=self.other_group,
-            allergies=[],
-        )
-
+        self.school = SchoolFactory()
+        self.other_school = SchoolFactory()
+        self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
+        self.teacher = UserFactory(role=User.Role.TEACHER, school=self.school)
+        self.group = GroupFactory(school=self.school)
+        self.other_group = GroupFactory(school=self.other_school)
+        self.child = ChildFactory(group=self.group)
+        self.other_child = ChildFactory(group=self.other_group)
         self.url = reverse('child-detail', kwargs={'pk': self.child.id})
 
     def test_director_can_update_child(self):
@@ -174,40 +122,14 @@ class ChildUpdateTests(APITestCase):
 class ChildDeleteTests(APITestCase):
 
     def setUp(self):
-        self.school = School.objects.create(name='Crèche Les Petits', slug='creche-les-petits')
-        self.other_school = School.objects.create(name='Autre Crèche', slug='autre-creche')
-
-        self.director = User.objects.create_user(
-            email='director@zaza.io',
-            password='director123',
-            role=User.Role.DIRECTOR,
-            school=self.school,
-        )
-        self.teacher = User.objects.create_user(
-            email='teacher@zaza.io',
-            password='teacher123',
-            role=User.Role.TEACHER,
-            school=self.school,
-        )
-
-        self.group = Group.objects.create(name='TPS', school=self.school)
-        self.other_group = Group.objects.create(name='TPS', school=self.other_school)
-
-        self.child = Child.objects.create(
-            first_name='Lova',
-            last_name='Rakoto',
-            birth_date='2022-03-15',
-            group=self.group,
-            allergies=[],
-        )
-        self.other_child = Child.objects.create(
-            first_name='Hery',
-            last_name='Andria',
-            birth_date='2021-05-10',
-            group=self.other_group,
-            allergies=[],
-        )
-
+        self.school = SchoolFactory()
+        self.other_school = SchoolFactory()
+        self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
+        self.teacher = UserFactory(role=User.Role.TEACHER, school=self.school)
+        self.group = GroupFactory(school=self.school)
+        self.other_group = GroupFactory(school=self.other_school)
+        self.child = ChildFactory(group=self.group)
+        self.other_child = ChildFactory(group=self.other_group)
         self.url = reverse('child-detail', kwargs={'pk': self.child.id})
 
     def test_director_can_delete_child(self):

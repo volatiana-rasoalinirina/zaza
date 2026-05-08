@@ -3,21 +3,14 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.accounts.models import School, User
+from apps.factories import SchoolFactory, UserFactory
 
 
 class SchoolCreateTests(APITestCase):
 
     def setUp(self):
-        self.director = User.objects.create_user(
-            email='director@zaza.io',
-            password='director123',
-            role=User.Role.DIRECTOR,
-        )
-        self.teacher = User.objects.create_user(
-            email='teacher@zaza.io',
-            password='teacher123',
-            role=User.Role.TEACHER,
-        )
+        self.director = UserFactory(role=User.Role.DIRECTOR, school=None)
+        self.teacher = UserFactory(role=User.Role.TEACHER, school=None)
         self.url = reverse('school_create')
         self.payload = {'name': 'Crèche Les Petits', 'slug': 'creche-les-petits'}
 
@@ -43,7 +36,7 @@ class SchoolCreateTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_duplicate_slug_is_rejected(self):
-        School.objects.create(name='Existing', slug='creche-les-petits')
+        SchoolFactory(slug='creche-les-petits')
         self.client.force_authenticate(user=self.director)
         response = self.client.post(self.url, self.payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
