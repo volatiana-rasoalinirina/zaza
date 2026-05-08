@@ -1,7 +1,7 @@
-from rest_framework import generics, viewsets
+from rest_framework import viewsets
 
 from apps.accounts.permissions import IsDirector, IsDirectorOrTeacher
-from apps.children.models import Child, ChildContact
+from apps.children.models import Child, ChildContact, Group
 from apps.children.serializers import ChildContactSerializer, ChildSerializer, GroupSerializer
 
 
@@ -13,12 +13,14 @@ class TenantViewSetMixin:
         serializer.save(school=self.request.user.school)
 
 
-class GroupCreateView(generics.CreateAPIView):
+class GroupViewSet(TenantViewSetMixin, viewsets.ModelViewSet):
     serializer_class = GroupSerializer
-    permission_classes = [IsDirector]
+    queryset = Group.objects.all()
 
-    def perform_create(self, serializer):
-        serializer.save(school=self.request.user.school)
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [IsDirectorOrTeacher()]
+        return [IsDirector()]
 
 
 class ChildViewSet(TenantViewSetMixin, viewsets.ModelViewSet):
