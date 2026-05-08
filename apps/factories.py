@@ -38,6 +38,7 @@ class ChildFactory(factory.django.DjangoModelFactory):
     last_name = 'Rakoto'
     birth_date = '2022-01-01'
     group = factory.SubFactory(GroupFactory)
+    school = factory.LazyAttribute(lambda obj: obj.group.school)
     allergies = []
 
 
@@ -46,6 +47,7 @@ class ChildContactFactory(factory.django.DjangoModelFactory):
         model = ChildContact
 
     child = factory.SubFactory(ChildFactory)
+    school = factory.LazyAttribute(lambda obj: obj.child.school)
     name = factory.Sequence(lambda n: f'Contact {n}')
     phone = factory.Sequence(lambda n: f'+2613400{n:05d}')
     relation = ChildContact.Relation.OTHER

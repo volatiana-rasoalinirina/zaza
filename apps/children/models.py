@@ -13,6 +13,7 @@ class Group(models.Model):
 
 
 class Child(models.Model):
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='children')
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     birth_date = models.DateField()
@@ -36,6 +37,7 @@ class ChildContact(models.Model):
         NEIGHBOR = 'NEIGHBOR', 'Voisin'
         OTHER = 'OTHER', 'Autre'
 
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='child_contacts')
     child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name='contacts')
     name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20, blank=True)

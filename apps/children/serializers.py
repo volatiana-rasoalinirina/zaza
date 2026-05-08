@@ -28,7 +28,7 @@ class ChildContactSerializer(serializers.ModelSerializer):
 
     def validate_child(self, child):
         request = self.context['request']
-        if child.group.school != request.user.school:
+        if child.school != request.user.school:
             raise serializers.ValidationError("Cet enfant n'appartient pas à votre école.")
         return child
 
