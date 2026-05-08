@@ -6,6 +6,7 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
 COPY requirements/base.txt requirements/base.txt
+RUN apt-get update && apt-get install -y gettext
 RUN pip install --no-cache-dir -r requirements/base.txt
 
 COPY . .
