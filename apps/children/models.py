@@ -21,3 +21,28 @@ class Child(models.Model):
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
+
+
+class ChildContact(models.Model):
+    class Relation(models.TextChoices):
+        FATHER = 'FATHER', 'Père'
+        MOTHER = 'MOTHER', 'Mère'
+        GRANDFATHER = 'GRANDFATHER', 'Grand-père'
+        GRANDMOTHER = 'GRANDMOTHER', 'Grand-mère'
+        UNCLE = 'UNCLE', 'Oncle'
+        AUNT = 'AUNT', 'Tante'
+        SIBLING = 'SIBLING', 'Frère/Sœur'
+        NANNY = 'NANNY', 'Nounou'
+        NEIGHBOR = 'NEIGHBOR', 'Voisin'
+        OTHER = 'OTHER', 'Autre'
+
+    child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name='contacts')
+    name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=20, blank=True)
+    relation = models.CharField(max_length=20, choices=Relation.choices)
+    photo_url = models.URLField(blank=True)
+    is_authorized_pickup = models.BooleanField(default=False)
+    is_emergency_contact = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.name} ({self.child})'

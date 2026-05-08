@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.children.models import Child, Group
+from apps.children.models import Child, ChildContact, Group
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -19,3 +19,22 @@ class ChildSerializer(serializers.ModelSerializer):
         if group.school != request.user.school:
             raise serializers.ValidationError("Ce groupe n'appartient pas à votre école.")
         return group
+
+
+class ChildContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChildContact
+        fields = ['id', 'child', 'name', 'phone', 'relation', 'photo_url', 'is_authorized_pickup', 'is_emergency_contact']
+
+    def validate_child(self, child):
+        request = self.context['request']
+        if child.group.school != request.user.school:
+            raise serializers.ValidationError("Cet enfant n'appartient pas à votre école.")
+        return child
+
+    def validate(self, data):
+        is_pickup = data.get('is_authorized_pickup', getattr(self.instance, 'is_authorized_pickup', False))
+        is_emergency = data.get('is_emergency_contact', getattr(self.instance, 'is_emergency_contact', False))
+        if not is_pickup and not is_emergency:
+            raise serializers.ValidationError("Le contact doit être au moins un pickup autorisé ou un contact d'urgence.")
+        return data

@@ -1,7 +1,7 @@
 import factory
 
 from apps.accounts.models import School, User
-from apps.children.models import Child, Group
+from apps.children.models import Child, ChildContact, Group
 
 
 class SchoolFactory(factory.django.DjangoModelFactory):
@@ -39,3 +39,15 @@ class ChildFactory(factory.django.DjangoModelFactory):
     birth_date = '2022-01-01'
     group = factory.SubFactory(GroupFactory)
     allergies = []
+
+
+class ChildContactFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ChildContact
+
+    child = factory.SubFactory(ChildFactory)
+    name = factory.Sequence(lambda n: f'Contact {n}')
+    phone = factory.Sequence(lambda n: f'+2613400{n:05d}')
+    relation = ChildContact.Relation.OTHER
+    is_authorized_pickup = True
+    is_emergency_contact = False
