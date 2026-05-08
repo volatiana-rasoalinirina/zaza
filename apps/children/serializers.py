@@ -12,7 +12,7 @@ class GroupSerializer(serializers.ModelSerializer):
 class ChildSerializer(serializers.ModelSerializer):
     class Meta:
         model = Child
-        fields = ['id', 'first_name', 'last_name', 'birth_date', 'group']
+        fields = ['id', 'first_name', 'last_name', 'birth_date', 'group', 'allergies']
 
     def validate_group(self, group):
         request = self.context['request']

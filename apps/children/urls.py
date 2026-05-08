@@ -1,8 +1,12 @@
-from django.urls import path
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
 
-from apps.children.views import ChildCreateView, GroupCreateView
+from apps.children.views import ChildViewSet, GroupCreateView
+
+router = DefaultRouter()
+router.register('children', ChildViewSet, basename='child')
 
 urlpatterns = [
     path('groups/', GroupCreateView.as_view(), name='group_create'),
-    path('children/', ChildCreateView.as_view(), name='child_create'),
+    path('', include(router.urls)),
 ]

@@ -3,7 +3,7 @@ from django.test.testcases import TestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.accounts.middleware import TenantMiddleware
-from apps.accounts.models import User, School
+from apps.accounts.models import School, User
 from apps.accounts.serializers import CustomTokenObtainPairSerializer
 
 

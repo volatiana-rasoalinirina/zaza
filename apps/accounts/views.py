@@ -1,5 +1,5 @@
-from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import generics
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from apps.accounts.permissions import IsDirector
 from apps.accounts.serializers import CustomTokenObtainPairSerializer, SchoolSerializer

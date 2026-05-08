@@ -1,0 +1,9 @@
+[tool.ruff]
+line-length = 119
+exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+"config/settings/*.py" = ["F403"]

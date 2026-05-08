@@ -1,9 +1,10 @@
 import jwt
 from django.conf import settings
 from django.urls import reverse
-from rest_framework.test import APITestCase
 from rest_framework import status
-from apps.accounts.models import User, School
+from rest_framework.test import APITestCase
+
+from apps.accounts.models import School, User
 
 
 class LoginTokenTests(APITestCase):

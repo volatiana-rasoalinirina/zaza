@@ -1,3 +1,4 @@
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 from apps.accounts.models import School
@@ -16,6 +17,7 @@ class Child(models.Model):
     last_name = models.CharField(max_length=100)
     birth_date = models.DateField()
     group = models.ForeignKey(Group, on_delete=models.PROTECT, related_name='children')
+    allergies = ArrayField(models.CharField(max_length=100), default=list, blank=True)
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
