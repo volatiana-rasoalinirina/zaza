@@ -1,7 +1,7 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
-from apps.accounts.models import School
+from apps.accounts.models import School, User
 
 
 class Group(models.Model):
@@ -48,3 +48,14 @@ class ChildContact(models.Model):
 
     def __str__(self):
         return f'{self.name} ({self.child})'
+
+
+class ChildParent(models.Model):
+    child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name='parents')
+    parent = models.ForeignKey(User, on_delete=models.CASCADE, related_name='children')
+
+    class Meta:
+        unique_together = ('child', 'parent')
+
+    def __str__(self):
+        return f'{self.parent} → {self.child}'

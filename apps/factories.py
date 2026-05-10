@@ -1,7 +1,8 @@
 import factory
 
 from apps.accounts.models import School, User
-from apps.children.models import Child, ChildContact, Group
+from apps.activities.models import Activity
+from apps.children.models import Child, ChildContact, ChildParent, Group
 
 
 class SchoolFactory(factory.django.DjangoModelFactory):
@@ -22,6 +23,15 @@ class UserFactory(factory.django.DjangoModelFactory):
     school = factory.SubFactory(SchoolFactory)
 
 
+class TeacherFactory(UserFactory):
+    role = User.Role.TEACHER
+    group = factory.SubFactory('apps.factories.GroupFactory')
+
+
+class ParentFactory(UserFactory):
+    role = User.Role.PARENT
+
+
 class GroupFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Group
@@ -40,6 +50,24 @@ class ChildFactory(factory.django.DjangoModelFactory):
     group = factory.SubFactory(GroupFactory)
     school = factory.LazyAttribute(lambda obj: obj.group.school)
     allergies = []
+
+
+class ChildParentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ChildParent
+
+    child = factory.SubFactory(ChildFactory)
+    parent = factory.SubFactory(ParentFactory, school=factory.SelfAttribute('..child.school'))
+
+
+class ActivityFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Activity
+
+    school = factory.SubFactory(SchoolFactory)
+    child = factory.SubFactory(ChildFactory, school=factory.SelfAttribute('..school'))
+    logged_by = factory.SubFactory(UserFactory, school=factory.SelfAttribute('..school'))
+    type = Activity.Type.NOTE
 
 
 class ChildContactFactory(factory.django.DjangoModelFactory):

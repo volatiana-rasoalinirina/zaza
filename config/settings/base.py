@@ -13,6 +13,7 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
     'apps.accounts',
     'apps.children',
+    'apps.activities',
     # third party
     'rest_framework',
     'django_filters',
