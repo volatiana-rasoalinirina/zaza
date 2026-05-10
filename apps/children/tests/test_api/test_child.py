@@ -4,7 +4,7 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.models import User
 from apps.children.models import Child
-from apps.factories import ChildFactory, GroupFactory, SchoolFactory, UserFactory
+from apps.factories import ChildFactory, GroupFactory, ParentFactory, SchoolFactory, UserFactory
 
 
 class ChildListTests(APITestCase):
@@ -13,10 +13,16 @@ class ChildListTests(APITestCase):
         self.school = SchoolFactory()
         self.other_school = SchoolFactory()
         self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
+        self.parent = ParentFactory(school=self.school)
         self.group = GroupFactory(school=self.school)
         self.other_group = GroupFactory(school=self.other_school)
         self.child = ChildFactory(group=self.group)
         self.other_child = ChildFactory(group=self.other_group)
+
+    def test_parent_cannot_list_children(self):
+        self.client.force_authenticate(user=self.parent)
+        response = self.client.get(reverse('child-list'))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_director_sees_only_own_school_children(self):
         self.client.force_authenticate(user=self.director)
@@ -39,6 +45,7 @@ class ChildCreateTests(APITestCase):
         self.other_school = SchoolFactory()
         self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
         self.teacher = UserFactory(role=User.Role.TEACHER, school=self.school)
+        self.parent = ParentFactory(school=self.school)
         self.group = GroupFactory(school=self.school)
         self.other_group = GroupFactory(school=self.other_school)
         self.url = reverse('child-list')
@@ -48,6 +55,11 @@ class ChildCreateTests(APITestCase):
             'birth_date': '2022-03-15',
             'group': self.group.id,
         }
+
+    def test_parent_cannot_create_child(self):
+        self.client.force_authenticate(user=self.parent)
+        response = self.client.post(self.url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_director_can_create_child(self):
         self.client.force_authenticate(user=self.director)
@@ -89,11 +101,17 @@ class ChildUpdateTests(APITestCase):
         self.other_school = SchoolFactory()
         self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
         self.teacher = UserFactory(role=User.Role.TEACHER, school=self.school)
+        self.parent = ParentFactory(school=self.school)
         self.group = GroupFactory(school=self.school)
         self.other_group = GroupFactory(school=self.other_school)
         self.child = ChildFactory(group=self.group)
         self.other_child = ChildFactory(group=self.other_group)
         self.url = reverse('child-detail', kwargs={'pk': self.child.id})
+
+    def test_parent_cannot_update_child(self):
+        self.client.force_authenticate(user=self.parent)
+        response = self.client.patch(self.url, {'first_name': 'Mamy'})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_director_can_update_child(self):
         self.client.force_authenticate(user=self.director)
@@ -126,11 +144,17 @@ class ChildDeleteTests(APITestCase):
         self.other_school = SchoolFactory()
         self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
         self.teacher = UserFactory(role=User.Role.TEACHER, school=self.school)
+        self.parent = ParentFactory(school=self.school)
         self.group = GroupFactory(school=self.school)
         self.other_group = GroupFactory(school=self.other_school)
         self.child = ChildFactory(group=self.group)
         self.other_child = ChildFactory(group=self.other_group)
         self.url = reverse('child-detail', kwargs={'pk': self.child.id})
+
+    def test_parent_cannot_delete_child(self):
+        self.client.force_authenticate(user=self.parent)
+        response = self.client.delete(self.url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_director_can_delete_child(self):
         self.client.force_authenticate(user=self.director)

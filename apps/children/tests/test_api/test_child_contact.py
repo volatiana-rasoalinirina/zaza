@@ -4,7 +4,7 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.models import User
 from apps.children.models import ChildContact
-from apps.factories import ChildContactFactory, ChildFactory, GroupFactory, SchoolFactory, UserFactory
+from apps.factories import ChildContactFactory, ChildFactory, GroupFactory, ParentFactory, SchoolFactory, UserFactory
 
 
 class ChildContactCreateTests(APITestCase):
@@ -14,6 +14,7 @@ class ChildContactCreateTests(APITestCase):
         self.other_school = SchoolFactory()
         self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
         self.teacher = UserFactory(role=User.Role.TEACHER, school=self.school)
+        self.parent = ParentFactory(school=self.school)
         self.child = ChildFactory(group=GroupFactory(school=self.school))
         self.other_child = ChildFactory(group=GroupFactory(school=self.other_school))
         self.url = reverse('childcontact-list')
@@ -24,6 +25,11 @@ class ChildContactCreateTests(APITestCase):
             'is_authorized_pickup': True,
             'is_emergency_contact': False,
         }
+
+    def test_parent_cannot_create_contact(self):
+        self.client.force_authenticate(user=self.parent)
+        response = self.client.post(self.url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_director_can_create_pickup_contact(self):
         self.client.force_authenticate(user=self.director)
@@ -80,6 +86,7 @@ class ChildContactListTests(APITestCase):
         self.other_school = SchoolFactory()
         self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
         self.teacher = UserFactory(role=User.Role.TEACHER, school=self.school)
+        self.parent = ParentFactory(school=self.school)
         self.child = ChildFactory(group=GroupFactory(school=self.school))
         self.other_child_same_school = ChildFactory(group=GroupFactory(school=self.school))
         self.other_school_child = ChildFactory(group=GroupFactory(school=self.other_school))
@@ -87,6 +94,11 @@ class ChildContactListTests(APITestCase):
         self.emergency = ChildContactFactory(child=self.child, is_authorized_pickup=False, is_emergency_contact=True)
         self.other_child_contact = ChildContactFactory(child=self.other_child_same_school, is_authorized_pickup=True, is_emergency_contact=False)
         self.other_school_contact = ChildContactFactory(child=self.other_school_child, is_authorized_pickup=True, is_emergency_contact=False)
+
+    def test_parent_cannot_list_contacts(self):
+        self.client.force_authenticate(user=self.parent)
+        response = self.client.get(reverse('childcontact-list'))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_director_sees_only_own_school_contacts(self):
         self.client.force_authenticate(user=self.director)
@@ -167,11 +179,17 @@ class ChildContactUpdateTests(APITestCase):
         self.other_school = SchoolFactory()
         self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
         self.teacher = UserFactory(role=User.Role.TEACHER, school=self.school)
+        self.parent = ParentFactory(school=self.school)
         self.child = ChildFactory(group=GroupFactory(school=self.school))
         self.other_child = ChildFactory(group=GroupFactory(school=self.other_school))
         self.contact = ChildContactFactory(child=self.child, is_authorized_pickup=True, is_emergency_contact=False)
         self.other_contact = ChildContactFactory(child=self.other_child, is_authorized_pickup=True, is_emergency_contact=False)
         self.url = reverse('childcontact-detail', kwargs={'pk': self.contact.id})
+
+    def test_parent_cannot_update_contact(self):
+        self.client.force_authenticate(user=self.parent)
+        response = self.client.patch(self.url, {'name': 'Marie Rakoto'})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_director_can_update_contact(self):
         self.client.force_authenticate(user=self.director)
@@ -204,11 +222,17 @@ class ChildContactDeleteTests(APITestCase):
         self.other_school = SchoolFactory()
         self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
         self.teacher = UserFactory(role=User.Role.TEACHER, school=self.school)
+        self.parent = ParentFactory(school=self.school)
         self.child = ChildFactory(group=GroupFactory(school=self.school))
         self.other_child = ChildFactory(group=GroupFactory(school=self.other_school))
         self.contact = ChildContactFactory(child=self.child, is_authorized_pickup=True, is_emergency_contact=False)
         self.other_contact = ChildContactFactory(child=self.other_child, is_authorized_pickup=True, is_emergency_contact=False)
         self.url = reverse('childcontact-detail', kwargs={'pk': self.contact.id})
+
+    def test_parent_cannot_delete_contact(self):
+        self.client.force_authenticate(user=self.parent)
+        response = self.client.delete(self.url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_director_can_delete_contact(self):
         self.client.force_authenticate(user=self.director)

@@ -4,7 +4,7 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.models import User
 from apps.children.models import Group
-from apps.factories import GroupFactory, SchoolFactory, UserFactory
+from apps.factories import GroupFactory, ParentFactory, SchoolFactory, UserFactory
 
 
 class GroupListTests(APITestCase):
@@ -14,8 +14,14 @@ class GroupListTests(APITestCase):
         self.other_school = SchoolFactory()
         self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
         self.teacher = UserFactory(role=User.Role.TEACHER, school=self.school)
+        self.parent = ParentFactory(school=self.school)
         self.group = GroupFactory(school=self.school)
         self.other_group = GroupFactory(school=self.other_school)
+
+    def test_parent_cannot_list_groups(self):
+        self.client.force_authenticate(user=self.parent)
+        response = self.client.get(reverse('group-list'))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_director_sees_only_own_school_groups(self):
         self.client.force_authenticate(user=self.director)
@@ -42,8 +48,14 @@ class GroupCreateTests(APITestCase):
         self.other_school = SchoolFactory()
         self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
         self.teacher = UserFactory(role=User.Role.TEACHER, school=self.school)
+        self.parent = ParentFactory(school=self.school)
         self.url = reverse('group-list')
         self.payload = {'name': 'TPS'}
+
+    def test_parent_cannot_create_group(self):
+        self.client.force_authenticate(user=self.parent)
+        response = self.client.post(self.url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_director_can_create_group(self):
         self.client.force_authenticate(user=self.director)
@@ -78,9 +90,15 @@ class GroupUpdateTests(APITestCase):
         self.other_school = SchoolFactory()
         self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
         self.teacher = UserFactory(role=User.Role.TEACHER, school=self.school)
+        self.parent = ParentFactory(school=self.school)
         self.group = GroupFactory(school=self.school)
         self.other_group = GroupFactory(school=self.other_school)
         self.url = reverse('group-detail', kwargs={'pk': self.group.id})
+
+    def test_parent_cannot_update_group(self):
+        self.client.force_authenticate(user=self.parent)
+        response = self.client.patch(self.url, {'name': 'PS'})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_director_can_update_group(self):
         self.client.force_authenticate(user=self.director)
@@ -112,9 +130,15 @@ class GroupDeleteTests(APITestCase):
         self.other_school = SchoolFactory()
         self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
         self.teacher = UserFactory(role=User.Role.TEACHER, school=self.school)
+        self.parent = ParentFactory(school=self.school)
         self.group = GroupFactory(school=self.school)
         self.other_group = GroupFactory(school=self.other_school)
         self.url = reverse('group-detail', kwargs={'pk': self.group.id})
+
+    def test_parent_cannot_delete_group(self):
+        self.client.force_authenticate(user=self.parent)
+        response = self.client.delete(self.url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_director_can_delete_group(self):
         self.client.force_authenticate(user=self.director)
