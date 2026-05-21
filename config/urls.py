@@ -6,4 +6,5 @@ urlpatterns = [
     path('api/', include('apps.accounts.urls')),
     path('api/', include('apps.children.urls')),
     path('api/', include('apps.activities.urls')),
+    path('api/', include('apps.messaging.urls')),
 ]

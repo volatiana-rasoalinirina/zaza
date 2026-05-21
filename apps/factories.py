@@ -3,6 +3,7 @@ import factory
 from apps.accounts.models import School, User
 from apps.activities.models import Activity
 from apps.children.models import Child, ChildContact, ChildParent, Group
+from apps.messaging.models import Message, Thread
 
 
 class SchoolFactory(factory.django.DjangoModelFactory):
@@ -81,3 +82,22 @@ class ChildContactFactory(factory.django.DjangoModelFactory):
     relation = ChildContact.Relation.OTHER
     is_authorized_pickup = True
     is_emergency_contact = False
+
+
+class ThreadFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Thread
+        django_get_or_create = ('child',)
+
+    child = factory.SubFactory(ChildFactory)
+
+
+class MessageFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Message
+
+    thread = factory.SubFactory(ThreadFactory)
+    sender = factory.SubFactory(UserFactory, school=factory.SelfAttribute('..thread.child.school'))
+    type = Message.Type.TEXT
+    content = factory.Sequence(lambda n: f'Message {n}')
+    file_url = ''

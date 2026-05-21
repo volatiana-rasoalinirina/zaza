@@ -14,6 +14,7 @@ INSTALLED_APPS = [
     'apps.accounts',
     'apps.children',
     'apps.activities',
+    'apps.messaging',
     # third party
     'rest_framework',
     'django_filters',
