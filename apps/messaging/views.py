@@ -13,9 +13,9 @@ def _accessible_threads(user):
     if user.role == User.Role.PARENT:
         child_ids = ChildParent.objects.filter(parent=user).values_list('child_id', flat=True)
         return Thread.objects.filter(child_id__in=child_ids, child__school=user.school)
-    if user.role == User.Role.TEACHER:
-        return Thread.objects.filter(child__group=user.group, child__school=user.school)
-    return Thread.objects.filter(child__school=user.school)
+    if user.role == User.Role.DIRECTOR:
+        return Thread.objects.filter(child__school=user.school)
+    return Thread.objects.none()
 
 
 class ThreadViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):

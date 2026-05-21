@@ -22,7 +22,6 @@ class ThreadListTests(APITestCase):
         self.other_school = SchoolFactory()
         self.group = GroupFactory(school=self.school)
         self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
-        self.teacher = TeacherFactory(school=self.school, group=self.group)
         self.parent = ParentFactory(school=self.school)
         self.child = ChildFactory(group=self.group)
         ChildParentFactory(child=self.child, parent=self.parent)
@@ -37,14 +36,6 @@ class ThreadListTests(APITestCase):
         self.assertIn(self.child.thread.id, ids)
         self.assertNotIn(self.other_child.thread.id, ids)
 
-    def test_teacher_sees_only_own_group_threads(self):
-        other_child = ChildFactory(group=GroupFactory(school=self.school))
-        self.client.force_authenticate(user=self.teacher)
-        response = self.client.get(self.url)
-        ids = [t['id'] for t in response.data]
-        self.assertIn(self.child.thread.id, ids)
-        self.assertNotIn(other_child.thread.id, ids)
-
     def test_parent_sees_only_own_children_threads(self):
         other_child = ChildFactory(group=self.group)
         self.client.force_authenticate(user=self.parent)
@@ -53,6 +44,13 @@ class ThreadListTests(APITestCase):
         self.assertIn(self.child.thread.id, ids)
         self.assertNotIn(other_child.thread.id, ids)
 
+    def test_teacher_gets_empty_thread_list(self):
+        teacher = TeacherFactory(school=self.school, group=self.group)
+        self.client.force_authenticate(user=teacher)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, [])
+
 
 class MessageListTests(APITestCase):
 
@@ -60,7 +58,6 @@ class MessageListTests(APITestCase):
         self.school = SchoolFactory()
         self.group = GroupFactory(school=self.school)
         self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
-        self.teacher = TeacherFactory(school=self.school, group=self.group)
         self.parent = ParentFactory(school=self.school)
         self.child = ChildFactory(group=self.group)
         ChildParentFactory(child=self.child, parent=self.parent)
@@ -75,11 +72,6 @@ class MessageListTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
 
-    def test_teacher_can_list_messages_in_group_thread(self):
-        self.client.force_authenticate(user=self.teacher)
-        response = self.client.get(self._url(self.child.thread.id))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
     def test_parent_can_list_messages_in_own_child_thread(self):
         self.client.force_authenticate(user=self.parent)
         response = self.client.get(self._url(self.child.thread.id))
@@ -91,10 +83,10 @@ class MessageListTests(APITestCase):
         response = self.client.get(self._url(other_child.thread.id))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_teacher_cannot_access_outside_group_thread(self):
-        other_child = ChildFactory(group=GroupFactory(school=self.school))
-        self.client.force_authenticate(user=self.teacher)
-        response = self.client.get(self._url(other_child.thread.id))
+    def test_teacher_cannot_access_thread(self):
+        teacher = TeacherFactory(school=self.school, group=self.group)
+        self.client.force_authenticate(user=teacher)
+        response = self.client.get(self._url(self.child.thread.id))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
@@ -104,7 +96,6 @@ class MessageCreateTests(APITestCase):
         self.school = SchoolFactory()
         self.group = GroupFactory(school=self.school)
         self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
-        self.teacher = TeacherFactory(school=self.school, group=self.group)
         self.parent = ParentFactory(school=self.school)
         self.child = ChildFactory(group=self.group)
         ChildParentFactory(child=self.child, parent=self.parent)
@@ -118,15 +109,16 @@ class MessageCreateTests(APITestCase):
         response = self.client.post(self._url(self.child.thread.id), self.payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    def test_teacher_can_send_message(self):
-        self.client.force_authenticate(user=self.teacher)
-        response = self.client.post(self._url(self.child.thread.id), self.payload)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
     def test_parent_can_send_message(self):
         self.client.force_authenticate(user=self.parent)
         response = self.client.post(self._url(self.child.thread.id), self.payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_teacher_cannot_send_message(self):
+        teacher = TeacherFactory(school=self.school, group=self.group)
+        self.client.force_authenticate(user=teacher)
+        response = self.client.post(self._url(self.child.thread.id), self.payload)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_unauthenticated_cannot_send_message(self):
         response = self.client.post(self._url(self.child.thread.id), self.payload)
