@@ -31,10 +31,17 @@ class User(AbstractUser):
         TEACHER = 'TEACHER', 'Teacher'
         PARENT = 'PARENT', 'Parent'
 
+    class Channel(models.TextChoices):
+        WHATSAPP = 'whatsapp', 'WhatsApp'
+        EMAIL = 'email', 'Email'
+
     email = models.EmailField(unique=True)
+    phone = models.CharField(max_length=20, blank=True)
     role = models.CharField(max_length=20, choices=Role.choices)
     school = models.ForeignKey(School, on_delete=models.SET_NULL, null=True, blank=True, related_name='users')
     group = models.ForeignKey('children.Group', on_delete=models.SET_NULL, null=True, blank=True, related_name='teachers')
+    preferred_channel = models.CharField(max_length=10, choices=Channel.choices, default=Channel.WHATSAPP)
+    notification_preferences = models.JSONField(default=dict, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

@@ -15,6 +15,7 @@ INSTALLED_APPS = [
     'apps.children',
     'apps.activities',
     'apps.messaging',
+    'apps.notifications',
     # third party
     'rest_framework',
     'django_filters',
@@ -87,6 +88,10 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
 }
+
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+CELERY_TASK_ALWAYS_EAGER = False
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),

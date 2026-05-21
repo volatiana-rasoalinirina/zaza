@@ -1,0 +1,10 @@
+class EventType:
+    CHECKIN = 'CHECKIN'
+    CHECKOUT = 'CHECKOUT'
+    MESSAGE = 'MESSAGE'
+    MEAL = 'MEAL'
+    NAP = 'NAP'
+    NOTE = 'NOTE'
+    PHOTO = 'PHOTO'
+
+    ALWAYS_ON = {CHECKIN, CHECKOUT, MESSAGE}

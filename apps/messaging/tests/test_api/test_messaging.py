@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -55,6 +57,9 @@ class ThreadListTests(APITestCase):
 class MessageListTests(APITestCase):
 
     def setUp(self):
+        patcher = patch('apps.notifications.signals.dispatch_notification.delay')
+        patcher.start()
+        self.addCleanup(patcher.stop)
         self.school = SchoolFactory()
         self.group = GroupFactory(school=self.school)
         self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
@@ -93,6 +98,9 @@ class MessageListTests(APITestCase):
 class MessageCreateTests(APITestCase):
 
     def setUp(self):
+        patcher = patch('apps.notifications.signals.dispatch_notification.delay')
+        patcher.start()
+        self.addCleanup(patcher.stop)
         self.school = SchoolFactory()
         self.group = GroupFactory(school=self.school)
         self.director = UserFactory(role=User.Role.DIRECTOR, school=self.school)
