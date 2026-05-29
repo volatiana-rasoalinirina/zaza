@@ -67,6 +67,23 @@ Message          ── TEXT | IMAGE | FILE inside a Thread
 
 ---
 
+## Notification Flow
+
+Messages trigger async notifications routed by sender role:
+
+```
+Message saved
+  └── post_save signal (notifications/signals.py)
+        ├── sender is Parent          → dispatch_notification.delay(director)
+        └── sender is Director/Teacher → dispatch_notification.delay(each parent of child)
+              └── Celery task (notifications/tasks.py)
+                    └── Notification created via dispatcher
+```
+
+This keeps the request/response cycle fast — the DB write and notification dispatch are fully decoupled.
+
+---
+
 ## Project Structure
 
 ```
