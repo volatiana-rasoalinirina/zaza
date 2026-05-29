@@ -119,7 +119,7 @@ zaza/
 ### Run locally
 
 ```bash
-git clone https://github.com/your-username/zaza.git
+git clone https://github.com/volatiana-rasoalinirina/zaza.git
 cd zaza
 
 # Start PostgreSQL, Redis, and the Django dev server
