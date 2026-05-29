@@ -27,14 +27,15 @@ Zaza.io is a multi-tenant childcare SaaS platform built for French-speaking Afri
 | Backend | Django 6, Django REST Framework |
 | Auth | `djangorestframework-simplejwt` |
 | Database | PostgreSQL 16 |
-| Cache / Queue | Redis 7, Celery (planned) |
+| Cache / Queue | Redis 7, Celery |
 | Storage | AWS S3 (planned) |
-| Notifications | WhatsApp Business Cloud API + Resend email (planned) |
+| Notifications | In-app (Celery async dispatch); WhatsApp + Resend email (planned) |
 | Infrastructure | Docker, Docker Compose |
 | Deploy | AWS EC2 + RDS + ElastiCache + ECR (planned) |
 | CI/CD | GitHub Actions (planned) |
 | Observability | Sentry + Prometheus + Grafana Cloud (planned) |
-| API docs | drf-spectacular / Swagger + ReDoc (planned) |
+| API docs | drf-spectacular / Swagger + ReDoc |
+| Rate limiting | DRF throttling (20/h anon, 1000/h user) |
 | i18n | django-modeltranslation, gettext (FR / EN / MG) |
 
 ---
@@ -74,12 +75,14 @@ zaza/
 │   ├── accounts/       # School, User, JWT auth, TenantMiddleware
 │   ├── children/       # Child, Group, ChildParent, ChildContact
 │   ├── activities/     # Activity feed (CHECKIN, CHECKOUT, MEAL…)
-│   └── messaging/      # Thread, Message
+│   ├── messaging/      # Thread, Message
+│   └── notifications/  # Notification model, signals, Celery async dispatch
 ├── config/
 │   ├── settings/
 │   │   ├── base.py
 │   │   ├── dev.py
 │   │   └── prod.py
+│   ├── celery.py
 │   └── urls.py
 ├── requirements/
 │   ├── base.txt
@@ -128,12 +131,12 @@ docker compose exec web python manage.py test
 
 ## Roadmap
 
-- [ ] Celery async tasks for notifications
+- [x] Celery async tasks for notifications
+- [x] Swagger / ReDoc API documentation
 - [ ] WhatsApp Business Cloud API integration
 - [ ] Resend email notifications
 - [ ] AWS deploy (EC2 + RDS + ElastiCache + S3)
 - [ ] GitHub Actions CI/CD pipeline
-- [ ] Swagger / ReDoc API documentation
 - [ ] Sentry + Prometheus + Grafana observability
 - [ ] DirectorSchool pivot (multi-site director accounts)
 
