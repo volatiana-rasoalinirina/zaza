@@ -112,6 +112,8 @@ zaza/
 
 ## Getting Started
 
+> The app runs fully locally via Docker Compose. AWS deployment (EC2 + RDS + ElastiCache) is planned — see Roadmap.
+
 ### Prerequisites
 
 - Docker and Docker Compose
